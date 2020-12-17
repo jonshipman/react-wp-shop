@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import { gql, useQuery } from "@apollo/client";
 import {
   SquarePaymentForm,
@@ -7,12 +7,13 @@ import {
   CreditCardExpirationDateInput,
   CreditCardNumberInput,
   CreditCardPostalCodeInput,
-  CreditCardSubmitButton,
+  Context,
   GooglePayButton,
   MasterpassButton,
 } from "react-square-payment-form";
 import "react-square-payment-form/lib/default.css";
 import { useCart } from "../cart";
+import { Button } from "react-wp-gql";
 
 const SettingsQuery = gql`
   query SquareSettings {
@@ -29,9 +30,29 @@ const SettingsQuery = gql`
   }
 `;
 
+const CustomSquareButton = ({ loading, setLoading, children }) => {
+  const context = useContext(Context);
+
+  return (
+    <div className="tc f3">
+      <Button
+        {...{ loading }}
+        onClick={(evt) => {
+          evt.preventDefault();
+          setLoading(true);
+          context.onCreateNonce();
+        }}
+      >
+        {children}
+      </Button>
+    </div>
+  );
+};
+
 export const SquarePayment = ({ checkout, onPaymentSuccess }) => {
   const { cart } = useCart();
   const { total } = cart || {};
+  const [loading, setLoading] = useState();
 
   const [errorMessages, setErrorMessages] = useState([]);
   const { data } = useQuery(SettingsQuery, { errorPolicy: "all" });
@@ -46,6 +67,7 @@ export const SquarePayment = ({ checkout, onPaymentSuccess }) => {
 
   function cardNonceResponseReceived(errors, nonce, buyerVerificationToken) {
     if (errors) {
+      setLoading(false);
       setErrorMessages(errors.map((error) => error.message));
       return;
     }
@@ -178,7 +200,9 @@ export const SquarePayment = ({ checkout, onPaymentSuccess }) => {
         </div>
       </fieldset>
 
-      <CreditCardSubmitButton>Pay {total}</CreditCardSubmitButton>
+      <CustomSquareButton {...{ loading, setLoading }}>
+        Pay {total}
+      </CustomSquareButton>
 
       <div className="sq-error-message">
         {errorMessages.map((errorMessage) => (
