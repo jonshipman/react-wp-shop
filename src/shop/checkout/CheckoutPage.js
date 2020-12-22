@@ -8,7 +8,7 @@ import React, {
 import { PageWidth, PostContent, useNode, Title } from "react-wp-gql";
 import { FormGroup, Button } from "react-wp-form";
 import { DetailsForm } from "./CheckoutDetailForms";
-import { CartDisplay, useCart } from "../cart";
+import { CartDisplay, useCart, useShippingUpdate } from "../cart";
 import { PaymentMethod } from "./PaymentMethod";
 import { Redirect } from "react-router-dom";
 import { ProcessCheckout } from "./ProcessCheckout";
@@ -59,6 +59,7 @@ export const CheckoutPage = () => {
   const [message, setMessage] = useState();
   const { cart, customer } = useCart();
   const cartItems = cart?.contents?.nodes || [];
+  const { updateShipping } = useShippingUpdate();
 
   // Updates the shipping/billing if there's already session data available.
   useEffect(() => {
@@ -120,6 +121,10 @@ export const CheckoutPage = () => {
         }
       });
       setForm((e) => ({ ...e, ..._form }));
+
+      if (_form.shipping_postcode) {
+        updateShipping({ postcode: _form.shipping_postcode });
+      }
     }
   };
 
