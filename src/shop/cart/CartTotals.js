@@ -11,16 +11,16 @@ const Display = ({ showTax, price, tax, label, last, bold }) => {
 
   return (
     <React.Fragment>
-      <tr>
-        <th>{label}:</th>
-        <td className={amountClassName}>{price}</td>
-      </tr>
       {showTax && (
         <tr>
           <th>Tax:</th>
           <td className={amountClassName}>{tax}</td>
         </tr>
       )}
+      <tr>
+        <th>{label}:</th>
+        <td className={amountClassName}>{price}</td>
+      </tr>
       {!last && (
         <tr>
           <td colSpan={2}>
@@ -57,7 +57,7 @@ const MoreTotals = ({ cart }) => {
             label="Shipping"
             price={shippingTotal}
             tax={shippingTax}
-            {...{ showTax }}
+            showTax={shippingTax !== "$0.00"}
           />
           <Display
             label="Total"
@@ -65,7 +65,7 @@ const MoreTotals = ({ cart }) => {
             tax={totalTax}
             last
             bold
-            {...{ showTax }}
+            showTax={false}
           />
         </tbody>
       </table>

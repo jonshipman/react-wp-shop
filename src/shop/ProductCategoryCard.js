@@ -1,5 +1,5 @@
 import React from "react";
-import { Button } from "../components";
+import { Button } from "react-wp-gql";
 import { ProductCard } from "./ProductCard";
 
 export const ProductCategoryCard = ({ name, posts, uri }) => {

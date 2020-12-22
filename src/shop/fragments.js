@@ -95,6 +95,38 @@ export const LiteralProductCategory = `
   )}
 `;
 
+export const FragmentCustomer = `
+  fragment CustomerFragment on Customer {
+    id
+    shipping {
+      state
+      postcode
+      phone
+      lastName
+      firstName
+      email
+      country
+      company
+      city
+      address2
+      address1
+    }
+    billing {
+      state
+      postcode
+      phone
+      lastName
+      firstName
+      email
+      country
+      company
+      city
+      address2
+      address1
+    }
+  }
+`;
+
 export const FragmentOrder = `
   fragment OrderFragment on Order {
     id

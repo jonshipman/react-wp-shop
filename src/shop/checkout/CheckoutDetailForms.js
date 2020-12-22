@@ -1,6 +1,7 @@
 import { gql, useQuery } from "@apollo/client";
-import React, { useCallback } from "react";
+import React, { useCallback, useEffect, useRef } from "react";
 import { LeadFormGroup, Valid } from "react-wp-form";
+import { useShippingUpdate } from "../cart";
 
 const LocationOptions = gql`
   query LocationOptions {
@@ -32,6 +33,13 @@ export const DetailsForm = ({
 }) => {
   const { data } = useQuery(LocationOptions, { errorPolicy: "all" });
   const countries = data ? data.countries || [] : [];
+  const { updateShipping } = useShippingUpdate();
+  const updateShippingDebounce = useRef();
+
+  // Clear the debounce.
+  useEffect(() => {
+    return () => clearTimeout(updateShippingDebounce.current);
+  }, []);
 
   /**
    * Populate all the fields automatically from the children inside the form.
@@ -52,8 +60,16 @@ export const DetailsForm = ({
         const _n = { ...existing, [field]: value };
         return _n;
       });
+
+      if (field === "shipping_postcode") {
+        clearTimeout(updateShippingDebounce.current);
+
+        updateShippingDebounce.current = setTimeout(() => {
+          updateShipping({ postcode: value });
+        }, 500);
+      }
     },
-    [setForm]
+    [setForm, updateShipping, updateShippingDebounce]
   );
 
   /**

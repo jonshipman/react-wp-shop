@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { PageWidth, PostContent } from "react-wp-gql";
 import { Link } from "react-router-dom";
-import { Button, Rule } from "../components";
+import { Button } from "react-wp-gql";
 import { useCart } from "../hooks";
 import { ProductCard } from "./ProductCard";
 
@@ -92,7 +92,6 @@ export const ProductRender = ({
           <div className="pl4 w-100 w-50-ns relative z-1">
             <div className="fw7 tracked mb3">{name}</div>
             <div className="f4">{price}</div>
-            <Rule wide className="mv3" />
             <PostContent className="i tracked">{content}</PostContent>
             <div className="mt5">
               {!!stockQuantity ? (

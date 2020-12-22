@@ -5,10 +5,9 @@ import React, {
   useRef,
   useState,
 } from "react";
-import { PageWidth, PostContent, useNode } from "react-wp-gql";
-import { FormGroup } from "react-wp-form";
+import { PageWidth, PostContent, useNode, Title } from "react-wp-gql";
+import { FormGroup, Button } from "react-wp-form";
 import { DetailsForm } from "./CheckoutDetailForms";
-import { Button, Title } from "../../components";
 import { CartDisplay, useCart } from "../cart";
 import { PaymentMethod } from "./PaymentMethod";
 import { Redirect } from "react-router-dom";
@@ -58,8 +57,33 @@ export const CheckoutPage = () => {
   const [checking, setChecking] = useState(false);
   const [process, setProcess] = useState(false);
   const [message, setMessage] = useState();
-  const { cart } = useCart();
+  const { cart, customer } = useCart();
   const cartItems = cart?.contents?.nodes || [];
+
+  // Updates the shipping/billing if there's already session data available.
+  useEffect(() => {
+    const __form = {};
+
+    if (!!customer?.shipping) {
+      Object.entries(customer.shipping).forEach(([key, value]) => {
+        if (value && !key.includes("typename")) {
+          __form[`shipping_${key}`] = value;
+        }
+      });
+    }
+
+    if (!!customer?.billing) {
+      Object.entries(customer.billing).forEach(([key, value]) => {
+        if (value && !key.includes("typename")) {
+          __form[`billing_${key}`] = value;
+        }
+      });
+    }
+
+    if (Object.keys(__form).length > 0) {
+      setForm((e) => ({ ...e, ...__form }));
+    }
+  }, [customer]);
 
   /**
    * Copies "billing_" fields to "shipping_" fields, otherwise clears the "shipping_ fields.

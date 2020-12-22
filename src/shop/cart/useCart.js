@@ -1,12 +1,25 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
-import { useMutation, useQuery, gql } from "@apollo/client";
-import { FragmentCart, FragmentOrder } from "../fragments";
+import { useMutation, useQuery, gql, useLazyQuery } from "@apollo/client";
+import { FragmentCart, FragmentOrder, FragmentCustomer } from "../fragments";
 import { useLocation } from "react-router-dom";
 import { useToast } from "../../toast";
 
 const QueryCart = gql`
   query Cart {
     cart {
+      ...cartNode
+    }
+    customer {
+      ...CustomerFragment
+    }
+  }
+  ${FragmentCart}
+  ${FragmentCustomer}
+`;
+
+const QueryCartRefresh = gql`
+  query CartRefresh {
+    cart(recalculateTotals: true) {
       ...cartNode
     }
   }
@@ -74,7 +87,7 @@ const MutationEmptyCart = gql`
 const CartContext = createContext();
 const useCartContext = () => useContext(CartContext);
 
-const useCartInitialQuery = (cart, setCart, order, setOrder) => {
+const useCartInitialQuery = (cart, setCart, order, setOrder, setCustomer) => {
   const props = { fetchPolicy: "network-only", skip: cart !== undefined };
   const { pathname } = useLocation();
   let query = QueryCart;
@@ -92,18 +105,23 @@ const useCartInitialQuery = (cart, setCart, order, setOrder) => {
 
   useEffect(() => {
     if (data) {
-      setCart(data?.cart);
+      setCart(data.cart);
 
       if (data.order) {
         setOrder(data.order);
       }
+
+      if (data.customer) {
+        setCustomer(data.customer);
+      }
     }
-  }, [data, setOrder, setCart]);
+  }, [data, setOrder, setCart, setCustomer]);
 
   return { loading, error };
 };
 
 export const CartProvider = ({ children, logged }) => {
+  const [customer, setCustomer] = useState();
   const [cart, setCart] = useState();
   const [order, setOrder] = useState();
 
@@ -118,10 +136,19 @@ export const CartProvider = ({ children, logged }) => {
     return () => clearTimeout(timeout);
   }, [logged]);
 
-  const { loading } = useCartInitialQuery(cart, setCart, order, setOrder);
+  const { loading } = useCartInitialQuery(
+    cart,
+    setCart,
+    order,
+    setOrder,
+    setCustomer,
+    customer
+  );
 
   return (
-    <CartContext.Provider value={{ cart, setCart, order, setOrder, loading }}>
+    <CartContext.Provider
+      value={{ cart, setCart, order, setOrder, loading, customer, setCustomer }}
+    >
       {children}
     </CartContext.Provider>
   );
@@ -134,10 +161,23 @@ export const useCart = (props = {}) => {
     setCart,
     order,
     setOrder,
+    customer,
+    setCustomer,
     loading: loadingCart,
   } = useCartContext();
 
   const { setToast } = useToast();
+
+  const [refreshCart, { loading: refreshing }] = useLazyQuery(
+    QueryCartRefresh,
+    {
+      errorPolicy: "all",
+      fetchPolicy: "network-only",
+      onCompleted: function (data) {
+        setCart(data.cart);
+      },
+    }
+  );
 
   const [mutateAdd, { loading: adding, error }] = useMutation(
     MutationAddToCart,
@@ -209,15 +249,19 @@ export const useCart = (props = {}) => {
     adding,
     addToCart,
     cart,
+    customer,
     emptyCart,
     emptying,
     error,
     loading: adding,
     loadingCart,
     order,
+    refreshCart,
+    refreshing,
     removeFromCart,
     removing,
     setCart,
+    setCustomer,
     setOrder,
   };
 };

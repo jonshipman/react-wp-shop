@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
-import { Button, Title } from "../../components";
+import { Button } from "react-wp-form";
 import { useCart } from "../cart";
-import { PageWidth, Seo } from "react-wp-gql";
+import { PageWidth, Seo, Title } from "react-wp-gql";
 
 export const ReceiptPage = () => {
   const { setCart, order } = useCart();
