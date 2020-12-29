@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { PageWidth, PostContent } from "react-wp-gql";
 import { Link } from "react-router-dom";
 import { Button } from "react-wp-gql";
@@ -49,12 +49,15 @@ export const ProductRender = ({
   const categories = productCategories?.nodes || [];
   const related = relatedProp?.nodes || [];
   const [featImage, setFeatImage] = useState();
+  const nodeID = useRef();
 
   useEffect(() => {
-    if (!featImage) {
+    if (nodeID.current !== databaseId) {
       setFeatImage(productImage);
     }
-  }, [featImage, productImage]);
+  }, [featImage, productImage, databaseId]);
+
+  useEffect(() => (nodeID.current = databaseId), [databaseId]);
 
   const { addToCart, adding } = useCart();
   const cartItem = {
