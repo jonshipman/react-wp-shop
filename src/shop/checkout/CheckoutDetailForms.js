@@ -2,6 +2,7 @@ import { gql, useQuery } from "@apollo/client";
 import React, { useCallback, useEffect, useRef } from "react";
 import { LeadFormGroup, Valid } from "react-wp-form";
 import { useShippingUpdate } from "../cart";
+import { states } from "./States";
 
 const LocationOptions = gql`
   query LocationOptions {
@@ -152,6 +153,8 @@ export const DetailsForm = ({
           {...GroupProps}
         />
         <LeadFormGroup
+          type="select"
+          options={states}
           label="State"
           id={`${prefix}state`}
           valid={Valid.NotEmptyString}
